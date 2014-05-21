@@ -1,0 +1,23 @@
+{
+  "name": "component-swig",
+  "version": "0.0.0",
+  "description": "A swig renderer for component",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/virtru-components/component-swig"
+  },
+  "keywords": [
+    "swig",
+    "templates",
+    "component"
+  ],
+  "author": "Payam Abedi",
+  "license": "MIT",
+  "homepage": "https://github.com/virtru-components/component-swig",
+  "dependencies": {
+    "debug": "^0.8.1",
+    "mkdirp": "^0.5.0",
+    "swig": "^1.3.2"
+  }
+}
