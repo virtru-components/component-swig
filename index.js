@@ -26,6 +26,7 @@ function buildTemplates(pkg, next) {
   if (!pkg.config.templates) return next();
   var files = pkg.config.templates.filter(filterHtml);
 
+  var config = getTemplateConfig(pkg.config.templateConfig);
 
   files.forEach(function(file) {
     debug('compiling: %s', file);
@@ -34,17 +35,38 @@ function buildTemplates(pkg, next) {
     mkdir.sync(writeLocation);
     var string = fs.readFileSync(pkg.path(file), 'utf8');
     var output = swig.render(string, {
-      filename: file
+      filename: file,
+      locals: config
     });
     fs.writeFileSync(writeLocation + '/index.html', output);
   });
   next();
 }
 
+
+/**
+ * Gets the template variables from file. This way you can pass in template vars
+ * using the component.json file.
+ * 
+ * @param  {Object} templateConfig Path to the template config file.
+ *                                 This loads the template variables into the template
+ *                                 processor
+ * @return {Object}                This loads and returns template variables to be used
+ *                                 for swig processing
+ */
+function getTemplateConfig(templateConfig) {
+  if (templateConfig) {
+    if (fs.existsSync(path.resolve(templateConfig))) {
+      return (JSON.parse(fs.readFileSync('./' + templateConfig, 'utf8')));
+    }
+  } else {
+    return {};
+  }
+}
+
 /**
  * Filter for .html files.
  */
-
 function filterHtml(filename) {
   if (path.extname(filename) === '.html') return true;
 }
