@@ -3,6 +3,8 @@ var path = require('path')
 var debug = require('debug')('component-json');
 var swig = require('swig');
 var mkdir = require('mkdirp');
+var utils = require('component-consoler');
+var log = utils.log;
 
 /** 
  * A component that uses swig to compile html
@@ -10,6 +12,7 @@ var mkdir = require('mkdirp');
  * folder structure within build.
  */
 module.exports = function(builder) {
+  console.log('Compiling HTML Templates');
   builder.hook('before scripts', buildTemplates);
 };
 
@@ -39,6 +42,7 @@ function buildTemplates(pkg, next) {
       locals: config
     });
     fs.writeFileSync(writeLocation + '/index.html', output);
+    log('complete', file);
   });
   next();
 }
@@ -47,7 +51,7 @@ function buildTemplates(pkg, next) {
 /**
  * Gets the template variables from file. This way you can pass in template vars
  * using the component.json file.
- * 
+ *
  * @param  {Object} templateConfig Path to the template config file.
  *                                 This loads the template variables into the template
  *                                 processor
