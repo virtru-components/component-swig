@@ -1,3 +1,4 @@
+var _ = require('underscore')
 var fs = require('fs');
 var path = require('path')
 var debug = require('debug')('component-json');
@@ -6,7 +7,7 @@ var mkdir = require('mkdirp');
 var utils = require('component-consoler');
 var log = utils.log;
 
-/** 
+/**
  * A component that uses swig to compile html
  * templates. This component puts files into /name/index.html
  * folder structure within build.
@@ -16,30 +17,49 @@ module.exports = function(builder) {
   builder.hook('before scripts', buildTemplates);
 };
 
+
+var DEFAULT_CONFIG = {
+  partials: 'templates/partials',
+  dest: 'build'
+};
+
 /**
  * Iterate over templates and build with partials
  */
-
 function buildTemplates(pkg, next) {
+
+  debug('building templates');
+
+  var config = _.extend({}, DEFAULT_CONFIG, pkg.config.swigConfig);
+  var swigLocals = config.swigLocals ? loadJson(config.swigLocals) : {};
+
   // Grab our JSON files.
   swig.setDefaults({
-    loader: swig.loaders.fs(path.resolve() + '/templates/partials')
+    loader: swig.loaders.fs(path.resolve(config.partials))
   });
 
-  if (!pkg.config.templates) return next();
-  var files = pkg.config.templates.filter(filterHtml);
+  if (!config.templates) {
+    debug('No templates to compile.');
+    return next();
+  }
 
-  var config = getTemplateConfig(pkg.config.templateConfig);
-
+  var files = config.templates.filter(filterHtml);
   files.forEach(function(file) {
     debug('compiling: %s', file);
+
     var fileInfo = getFileName(file);
-    var writeLocation = getWriteLocation(fileInfo, path.resolve() + '/build');
+
+    var dest = path.resolve(config.dest);
+
+    var writeLocation = getWriteLocation(fileInfo, dest);
     mkdir.sync(writeLocation);
+
+    var resolved = pkg.path(file);
     var string = fs.readFileSync(pkg.path(file), 'utf8');
+    debug(string);
     var output = swig.render(string, {
-      filename: file,
-      locals: config
+      filename: resolved,
+      locals: {}
     });
     fs.writeFileSync(writeLocation + '/index.html', output);
     log('complete', file);
@@ -58,14 +78,11 @@ function buildTemplates(pkg, next) {
  * @return {Object}                This loads and returns template variables to be used
  *                                 for swig processing
  */
-function getTemplateConfig(templateConfig) {
-  if (templateConfig) {
-    if (fs.existsSync(path.resolve(templateConfig))) {
-      return (JSON.parse(fs.readFileSync('./' + templateConfig, 'utf8')));
-    }
-  } else {
-    return {};
+function loadJson(jsonPath) {
+  if (fs.existsSync(path.resolve(jsonPath))) {
+    return JSON.parse(fs.readFileSync('./' + jsonPath, 'utf8'));
   }
+  return {};
 }
 
 /**
@@ -89,11 +106,11 @@ function getFileName(filePath) {
     name: name[0],
     extension: name[1]
   }
-};
+}
 
 /**
  * Returns the location to write the built file
- 
+
  * @param  {Object} filePath  An object with filename and extension
  * @param  {String} buildPath The path of the given file in the
  *                            component.json file
