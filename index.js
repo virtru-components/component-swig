@@ -56,7 +56,6 @@ function buildTemplates(pkg, next) {
 
     var resolved = pkg.path(file);
     var string = fs.readFileSync(pkg.path(file), 'utf8');
-    debug(string);
     var output = swig.render(string, {
       filename: resolved,
       locals: {}
