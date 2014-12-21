@@ -1,7 +1,7 @@
 var _ = require('underscore')
 var fs = require('fs');
 var path = require('path')
-var debug = require('debug')('component-json');
+var debug = require('debug')('component-swig');
 var swig = require('swig');
 var mkdir = require('mkdirp');
 var utils = require('component-consoler');
@@ -31,7 +31,7 @@ function buildTemplates(pkg, next) {
   debug('building templates');
 
   var config = _.extend({}, DEFAULT_CONFIG, pkg.config.swigConfig);
-  var swigLocals = config.swigLocals ? loadJson(config.swigLocals) : {};
+  var swigLocals = config.locals ? loadJson(config.locals) : {};
 
   // Grab our JSON files.
   swig.setDefaults({
@@ -58,7 +58,7 @@ function buildTemplates(pkg, next) {
     var string = fs.readFileSync(pkg.path(file), 'utf8');
     var output = swig.render(string, {
       filename: resolved,
-      locals: {}
+      locals: swigLocals
     });
     fs.writeFileSync(writeLocation + '/index.html', output);
     log('complete', file);
@@ -79,8 +79,10 @@ function buildTemplates(pkg, next) {
  */
 function loadJson(jsonPath) {
   if (fs.existsSync(path.resolve(jsonPath))) {
+    debug('Loading config file...');
     return JSON.parse(fs.readFileSync('./' + jsonPath, 'utf8'));
   }
+  debug('Returning default.. config not exists');
   return {};
 }
 
