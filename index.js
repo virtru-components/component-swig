@@ -26,8 +26,8 @@ function buildTemplates(pkg, next) {
     loader: swig.loaders.fs(path.resolve() + '/templates/partials')
   });
 
-  if (!pkg.config.templates) return next();
-  var files = pkg.config.templates.filter(filterHtml);
+  if (!pkg.config.partials) return next();
+  var files = pkg.config.partials.filter(filterHtml);
 
   var config = getTemplateConfig(pkg.config.templateConfig);
 
